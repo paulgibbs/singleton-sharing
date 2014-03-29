@@ -50,22 +50,41 @@ function dps_add_wp_embed_handler() {
 
 	// Look for URLs that match the current permalink structure -- posts.
 	$post_pattern = preg_quote( home_url() . $GLOBALS['wp_rewrite']->permalink_structure, '/' );
-	$post_pattern = '#^' . preg_replace( '/%[^%]+%/', '[^/]+', $post_pattern ) . '$#i';
-	wp_embed_register_handler( 'dps_wordpress_post', $post_pattern, 'xwp_embed_handler_googlevideo' );
+	$post_pattern = preg_replace_callback( '/%[^%]+%/', 'dps_cb_wp_embed_regex', $post_pattern );
+
+	wp_embed_register_handler( 'dps_wordpress_post', '#^' . $post_pattern . '$#i', 'dps_wp_embed_handler' );
 }
 add_action( 'init', 'dps_add_wp_embed_handler' );
 
 /**
- * The Google Video embed handler callback. Google Video does not support oEmbed.
+ * Callback function for a preg_replace in {@see dps_add_wp_embed_handler()}.
  *
- * @see WP_Embed::register_handler()
- * @see WP_Embed::shortcode()
+ * @param array $matches Matches from the regular expression
+ * @return string Replacement value
+ * @since Singleton Sharing (1.0)
+ */
+function dps_cb_wp_embed_regex( array $matches ) {
+	$match = array_shift( $matches );
+
+	// The post_name or post_id are required in the embed handler, so use named capture groups.
+	if ( $match === '%postname%' ) {
+		return '(?<postname>[^/]+)';
+	} elseif ( $match === '%post_id%' ) {
+		return '(?<post_id>[0-9]+)';
+	} else {
+		return '[^/]+';
+	}
+}
+
+/**
+ * The Google Video embed handler callback. Google Video does not support oEmbed.
  *
  * @param array $matches The regex matches from the provided regex when calling {@link wp_embed_register_handler()}.
  * @param array $attr Embed attributes.
  * @param string $url The original URL that was matched by the regex.
  * @param array $rawattr The original unmodified attributes.
  * @return string The embed HTML.
+ * @since Singleton Sharing (1.0)
  */
 function xwp_embed_handler_googlevideo( $matches, $attr, $url, $rawattr ) {
 	// If the user supplied a fixed width AND height, use it
