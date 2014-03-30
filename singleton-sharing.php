@@ -82,7 +82,7 @@ function dps_wp_embed_handler_cb( array $matches ) {
  */
 
 /**
- * The Google Video embed handler callback. Google Video does not support oEmbed.
+ * Ember handler for blog posts and comments.
  *
  * @param array $matches The regex matches from the provided regex when calling {@link wp_embed_register_handler()}.
  * @param array $attr Embed attributes.
