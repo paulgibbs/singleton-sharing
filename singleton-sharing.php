@@ -46,24 +46,24 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  *
  * @since Singleton Sharing (1.0)
  */
-function dps_add_wp_embed_handler() {
+function dps_add_wp_embed_handlers() {
 
 	// Look for URLs that match the current permalink structure -- posts.
 	$post_pattern = preg_quote( home_url() . $GLOBALS['wp_rewrite']->permalink_structure, '/' );
-	$post_pattern = preg_replace_callback( '/%[^%]+%/', 'dps_cb_wp_embed_regex', $post_pattern );
+	$post_pattern = preg_replace_callback( '/%[^%]+%/', 'dps_wp_embed_handler_cb', $post_pattern );
 
 	wp_embed_register_handler( 'dps_wordpress_post', '#^' . $post_pattern . '$#i', 'dps_wp_embed_handler' );
 }
-add_action( 'init', 'dps_add_wp_embed_handler' );
+add_action( 'init', 'dps_add_wp_embed_handlers' );
 
 /**
- * Callback function for a preg_replace in {@see dps_add_wp_embed_handler()}.
+ * preg_replace callback function for {@see dps_add_wp_embed_handler()}.
  *
  * @param array $matches Matches from the regular expression
  * @return string Replacement value
  * @since Singleton Sharing (1.0)
  */
-function dps_cb_wp_embed_regex( array $matches ) {
+function dps_wp_embed_handler_cb( array $matches ) {
 	$match = array_shift( $matches );
 
 	// The post_name or post_id are required in the embed handler, so use named capture groups.
@@ -76,6 +76,11 @@ function dps_cb_wp_embed_regex( array $matches ) {
 	}
 }
 
+
+/**
+ * Embed handlers
+ */
+
 /**
  * The Google Video embed handler callback. Google Video does not support oEmbed.
  *
@@ -86,14 +91,8 @@ function dps_cb_wp_embed_regex( array $matches ) {
  * @return string The embed HTML.
  * @since Singleton Sharing (1.0)
  */
-function xwp_embed_handler_googlevideo( $matches, $attr, $url, $rawattr ) {
-	// If the user supplied a fixed width AND height, use it
-	if ( !empty($rawattr['width']) && !empty($rawattr['height']) ) {
-		$width  = (int) $rawattr['width'];
-		$height = (int) $rawattr['height'];
-	} else {
-		list( $width, $height ) = wp_expand_dimensions( 425, 344, $attr['width'], $attr['height'] );
-	}
-
-	return apply_filters( 'embed_googlevideo', '<embed type="application/x-shockwave-flash" src="http://video.google.com/googleplayer.swf?docid=' . esc_attr($matches[2]) . '&amp;hl=en&amp;fs=true" style="width:' . esc_attr($width) . 'px;height:' . esc_attr($height) . 'px" allowFullScreen="true" allowScriptAccess="always" />', $matches, $attr, $url, $rawattr );
+function dps_wp_embed_handler( $matches, $attr, $url, $rawattr ) {
+	$html = '';
+	return apply_filters( 'dps_wp_embed_handler', $html, $matches, $attr, $url, $rawattr );
 }
+
