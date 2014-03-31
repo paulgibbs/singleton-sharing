@@ -48,11 +48,17 @@ if ( ! defined( 'ABSPATH' ) ) exit;
  */
 function dps_add_wp_embed_handlers() {
 
-	// Look for URLs that match the current permalink structure -- posts.
-	$post_pattern = preg_quote( home_url() . $GLOBALS['wp_rewrite']->permalink_structure, '/' );
-	$post_pattern = preg_replace_callback( '/%[^%]+%/', 'dps_wp_embed_handler_cb', $post_pattern );
+	// Posts
+	$pattern = preg_quote( home_url() . $GLOBALS['wp_rewrite']->permalink_structure, '/' );
+	$pattern = preg_replace_callback( '/%[^%]+%/', 'dps_wp_embed_handler_cb', $pattern );
+	wp_embed_register_handler( 'dps_wordpress_post', '#^' . $pattern . '$#i', 'dps_wp_embed_handler' );
 
-	wp_embed_register_handler( 'dps_wordpress_post', '#^' . $post_pattern . '$#i', 'dps_wp_embed_handler' );
+	// Comments
+	$pattern  = preg_quote( home_url() . $GLOBALS['wp_rewrite']->permalink_structure, '/' );
+	$pattern .= '(?:comment-page-(?:[0-9]{1,})/?)?';   // example.com/2014/03/hello-world/comment-page-1/#comment-37265
+	$pattern .= '\#comment-(?<comment_id>[0-9]{1,})';  // example.com/2014/03/hello-world/#comment-1
+	$pattern  = preg_replace_callback( '/%[^%]+%/', 'dps_wp_embed_handler_cb', $pattern );
+	wp_embed_register_handler( 'dps_wordpress_comment', '#^' . $pattern . '$#i', 'dps_wp_embed_handler' );
 }
 add_action( 'init', 'dps_add_wp_embed_handlers' );
 
