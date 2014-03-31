@@ -57,7 +57,7 @@ function dps_add_wp_embed_handlers() {
 add_action( 'init', 'dps_add_wp_embed_handlers' );
 
 /**
- * preg_replace callback function for {@see dps_add_wp_embed_handler()}.
+ * preg_replace callback function for {@see dps_add_wp_embed_handler()}; strips out unwanted rewrite tokens.
  *
  * @param array $matches Matches from the regular expression
  * @return string Replacement value
